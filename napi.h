@@ -1,6 +1,10 @@
 #ifndef SRC_NAPI_H_
 #define SRC_NAPI_H_
 
+#if !defined(NAPI_NORMAL)
+#define OHOS 1
+#endif
+
 #ifndef NAPI_HAS_THREADS
 #if !defined(__wasm__) || (defined(__EMSCRIPTEN_PTHREADS__) ||                 \
                            (defined(__wasi__) && defined(_REENTRANT)))
@@ -470,7 +474,9 @@ using MaybeOrValue = Maybe<T>;
         bool IsDate() const;  ///< Tests if a value is a JavaScript date.
 #endif
         bool IsString() const;  ///< Tests if a value is a JavaScript string.
+#ifndef OHOS
         bool IsSymbol() const;  ///< Tests if a value is a JavaScript symbol.
+#endif
         bool IsArray() const;   ///< Tests if a value is a JavaScript array.
         bool IsArrayBuffer()
         const;  ///< Tests if a value is a JavaScript array buffer.
@@ -703,7 +709,7 @@ class Date : public Value {
         std::u16string Utf16Value()
         const;  ///< Converts a String value to a UTF-16 encoded C++ string.
     };
-
+#ifndef OHOS
 /// A JavaScript symbol value.
     class Symbol : public Name {
     public:
@@ -754,6 +760,7 @@ class Date : public Value {
         Symbol(napi_env env,
                napi_value value);  ///< Wraps a Node-API value primitive.
     };
+#endif
 
     class TypeTaggable : public Value {
     public:
@@ -2186,6 +2193,7 @@ class Date : public Value {
                 InstanceMethodCallback method,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#ifndef OHOS
         static PropertyDescriptor InstanceMethod(
                 Symbol name,
                 InstanceVoidMethodCallback method,
@@ -2196,6 +2204,7 @@ class Date : public Value {
                 InstanceMethodCallback method,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#endif
         template <InstanceVoidMethodCallback method>
         static PropertyDescriptor InstanceMethod(
                 const char* utf8name,
@@ -2206,6 +2215,7 @@ class Date : public Value {
                 const char* utf8name,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#ifndef OHOS
         template <InstanceVoidMethodCallback method>
         static PropertyDescriptor InstanceMethod(
                 Symbol name,
@@ -2216,38 +2226,46 @@ class Date : public Value {
                 Symbol name,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#endif
         static PropertyDescriptor InstanceAccessor(
                 const char* utf8name,
                 InstanceGetterCallback getter,
                 InstanceSetterCallback setter,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#ifndef OHOS
         static PropertyDescriptor InstanceAccessor(
                 Symbol name,
                 InstanceGetterCallback getter,
                 InstanceSetterCallback setter,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#endif
         template <InstanceGetterCallback getter,
                 InstanceSetterCallback setter = nullptr>
         static PropertyDescriptor InstanceAccessor(
                 const char* utf8name,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#ifndef OHOS
         template <InstanceGetterCallback getter,
                 InstanceSetterCallback setter = nullptr>
         static PropertyDescriptor InstanceAccessor(
                 Symbol name,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#endif
         static PropertyDescriptor InstanceValue(
                 const char* utf8name,
                 Napi::Value value,
                 napi_property_attributes attributes = napi_default);
+
+#ifndef OHOS
         static PropertyDescriptor InstanceValue(
                 Symbol name,
                 Napi::Value value,
                 napi_property_attributes attributes = napi_default);
+#endif
 
     protected:
         static void AttachPropData(napi_env env,
@@ -2353,6 +2371,8 @@ class Date : public Value {
                 StaticMethodCallback method,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+
+#ifndef OHOS
         static PropertyDescriptor StaticMethod(
                 Symbol name,
                 StaticVoidMethodCallback method,
@@ -2363,56 +2383,67 @@ class Date : public Value {
                 StaticMethodCallback method,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#endif
         template <StaticVoidMethodCallback method>
         static PropertyDescriptor StaticMethod(
                 const char* utf8name,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#ifndef OHOS
         template <StaticVoidMethodCallback method>
         static PropertyDescriptor StaticMethod(
                 Symbol name,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#endif
         template <StaticMethodCallback method>
         static PropertyDescriptor StaticMethod(
                 const char* utf8name,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#ifndef OHOS
         template <StaticMethodCallback method>
         static PropertyDescriptor StaticMethod(
                 Symbol name,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#endif
         static PropertyDescriptor StaticAccessor(
                 const char* utf8name,
                 StaticGetterCallback getter,
                 StaticSetterCallback setter,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#ifndef OHOS
         static PropertyDescriptor StaticAccessor(
                 Symbol name,
                 StaticGetterCallback getter,
                 StaticSetterCallback setter,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#endif
         template <StaticGetterCallback getter, StaticSetterCallback setter = nullptr>
         static PropertyDescriptor StaticAccessor(
                 const char* utf8name,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#ifndef OHOS
         template <StaticGetterCallback getter, StaticSetterCallback setter = nullptr>
         static PropertyDescriptor StaticAccessor(
                 Symbol name,
                 napi_property_attributes attributes = napi_default,
                 void* data = nullptr);
+#endif
         static PropertyDescriptor StaticValue(
                 const char* utf8name,
                 Napi::Value value,
                 napi_property_attributes attributes = napi_default);
+#ifndef OHOS
         static PropertyDescriptor StaticValue(
                 Symbol name,
                 Napi::Value value,
                 napi_property_attributes attributes = napi_default);
+#endif
         static Napi::Value OnCalledAsFunction(const Napi::CallbackInfo& callbackInfo);
         virtual void Finalize(Napi::Env env);
 
@@ -3177,11 +3208,13 @@ class AsyncProgressQueueWorker
 };
 #endif  // NAPI_VERSION > 3 && NAPI_HAS_THREADS
 
+#ifndef OHOS
 // Memory management.
     class MemoryManagement {
     public:
         static int64_t AdjustExternalMemory(Env env, int64_t change_in_bytes);
     };
+#endif
 
 // Version management
     class VersionManagement {

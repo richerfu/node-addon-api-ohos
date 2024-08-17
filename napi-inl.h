@@ -68,6 +68,7 @@ inline void PostFinalizerWrapper(node_api_nogc_env nogc_env,
                                       void* hint = nullptr) {
             napi_status status;
 #if (NAPI_VERSION < 5)
+            #ifndef OHOS
             napi_value symbol, external;
             status = napi_create_symbol(env, nullptr, &symbol);
             if (status == napi_ok) {
@@ -84,6 +85,7 @@ inline void PostFinalizerWrapper(node_api_nogc_env nogc_env,
                     status = napi_define_properties(env, obj, 1, &desc);
                 }
             }
+            #endif
 #else  // NAPI_VERSION >= 5
             status = napi_add_finalizer(
       env, obj, data, details::PostFinalizerWrapper<finalizer>, hint, nullptr);
@@ -706,9 +708,11 @@ void Env::DefaultFiniWithHint(Env, DataType* data, HintType*) {
         return Type() == napi_string;
     }
 
+#ifndef OHOS
     inline bool Value::IsSymbol() const {
         return Type() == napi_symbol;
     }
+#endif
 
     inline bool Value::IsArray() const {
         if (IsEmpty()) {
@@ -1176,7 +1180,7 @@ inline double Date::ValueOf() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Symbol class
 ////////////////////////////////////////////////////////////////////////////////
-
+#ifndef OHOS
     inline Symbol Symbol::New(napi_env env, const char* description) {
         napi_value descriptionValue = description != nullptr
                                       ? String::New(env, description)
@@ -1270,7 +1274,7 @@ inline double Date::ValueOf() const {
     inline Symbol::Symbol() : Name() {}
 
     inline Symbol::Symbol(napi_env env, napi_value value) : Name(env, value) {}
-
+#endif
 ////////////////////////////////////////////////////////////////////////////////
 // Automagic value creation
 ////////////////////////////////////////////////////////////////////////////////
@@ -4217,7 +4221,7 @@ inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceMethod(
     desc.attributes = attributes;
     return desc;
 }
-
+#ifndef OHOS
 template <typename T>
 inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceMethod(
         Symbol name,
@@ -4251,6 +4255,7 @@ inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceMethod(
     desc.attributes = attributes;
     return desc;
 }
+#endif
 
 template <typename T>
 template <typename InstanceWrap<T>::InstanceVoidMethodCallback method>
@@ -4275,7 +4280,7 @@ inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceMethod(
     desc.attributes = attributes;
     return desc;
 }
-
+#ifndef OHOS
 template <typename T>
 template <typename InstanceWrap<T>::InstanceVoidMethodCallback method>
 inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceMethod(
@@ -4299,6 +4304,7 @@ inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceMethod(
     desc.attributes = attributes;
     return desc;
 }
+#endif
 
 template <typename T>
 inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceAccessor(
@@ -4319,6 +4325,7 @@ inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceAccessor(
     return desc;
 }
 
+#ifndef OHOS
 template <typename T>
 inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceAccessor(
         Symbol name,
@@ -4337,6 +4344,7 @@ inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceAccessor(
     desc.attributes = attributes;
     return desc;
 }
+#endif
 
 template <typename T>
 template <typename InstanceWrap<T>::InstanceGetterCallback getter,
@@ -4351,7 +4359,7 @@ inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceAccessor(
     desc.attributes = attributes;
     return desc;
 }
-
+#ifndef OHOS
 template <typename T>
 template <typename InstanceWrap<T>::InstanceGetterCallback getter,
         typename InstanceWrap<T>::InstanceSetterCallback setter>
@@ -4365,6 +4373,7 @@ inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceAccessor(
     desc.attributes = attributes;
     return desc;
 }
+#endif
 
 template <typename T>
 inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceValue(
@@ -4378,6 +4387,7 @@ inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceValue(
     return desc;
 }
 
+#ifndef OHOS
 template <typename T>
 inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceValue(
         Symbol name, Napi::Value value, napi_property_attributes attributes) {
@@ -4387,6 +4397,7 @@ inline ClassPropertyDescriptor<T> InstanceWrap<T>::InstanceValue(
     desc.attributes = attributes;
     return desc;
 }
+#endif
 
 template <typename T>
 inline napi_value InstanceWrap<T>::InstanceVoidMethodCallbackWrapper(
@@ -4643,6 +4654,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
     return desc;
 }
 
+#ifndef OHOS
 template <typename T>
 inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
         Symbol name,
@@ -4660,7 +4672,9 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
             static_cast<napi_property_attributes>(attributes | napi_static);
     return desc;
 }
+#endif
 
+#ifndef OHOS
 template <typename T>
 inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
         Symbol name,
@@ -4678,6 +4692,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
             static_cast<napi_property_attributes>(attributes | napi_static);
     return desc;
 }
+#endif
 
 template <typename T>
 template <typename ObjectWrap<T>::StaticVoidMethodCallback method>
@@ -4692,6 +4707,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
     return desc;
 }
 
+#ifndef OHOS
 template <typename T>
 template <typename ObjectWrap<T>::StaticVoidMethodCallback method>
 inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
@@ -4704,6 +4720,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
             static_cast<napi_property_attributes>(attributes | napi_static);
     return desc;
 }
+#endif
 
 template <typename T>
 template <typename ObjectWrap<T>::StaticMethodCallback method>
@@ -4718,6 +4735,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
     return desc;
 }
 
+#ifndef OHOS
 template <typename T>
 template <typename ObjectWrap<T>::StaticMethodCallback method>
 inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
@@ -4730,6 +4748,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticMethod(
             static_cast<napi_property_attributes>(attributes | napi_static);
     return desc;
 }
+#endif
 
 template <typename T>
 inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticAccessor(
@@ -4751,6 +4770,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticAccessor(
     return desc;
 }
 
+#ifndef OHOS
 template <typename T>
 inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticAccessor(
         Symbol name,
@@ -4770,6 +4790,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticAccessor(
             static_cast<napi_property_attributes>(attributes | napi_static);
     return desc;
 }
+#endif
 
 template <typename T>
 template <typename ObjectWrap<T>::StaticGetterCallback getter,
@@ -4786,6 +4807,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticAccessor(
     return desc;
 }
 
+#ifndef OHOS
 template <typename T>
 template <typename ObjectWrap<T>::StaticGetterCallback getter,
         typename ObjectWrap<T>::StaticSetterCallback setter>
@@ -4800,6 +4822,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticAccessor(
             static_cast<napi_property_attributes>(attributes | napi_static);
     return desc;
 }
+#endif
 
 template <typename T>
 inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticValue(
@@ -4814,6 +4837,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticValue(
     return desc;
 }
 
+#ifndef OHOS
 template <typename T>
 inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticValue(
         Symbol name, Napi::Value value, napi_property_attributes attributes) {
@@ -4824,6 +4848,7 @@ inline ClassPropertyDescriptor<T> ObjectWrap<T>::StaticValue(
             static_cast<napi_property_attributes>(attributes | napi_static);
     return desc;
 }
+#endif
 
 template <typename T>
 inline Value ObjectWrap<T>::OnCalledAsFunction(
@@ -6536,7 +6561,7 @@ inline void AsyncProgressQueueWorker<T>::ExecutionProgress::Send(
 ////////////////////////////////////////////////////////////////////////////////
 // Memory Management class
 ////////////////////////////////////////////////////////////////////////////////
-
+#ifndef OHOS
 inline int64_t MemoryManagement::AdjustExternalMemory(Env env,
 int64_t change_in_bytes) {
 int64_t result;
@@ -6545,7 +6570,7 @@ napi_status status =
 NAPI_THROW_IF_FAILED(env, status, 0);
 return result;
 }
-
+#endif
 ////////////////////////////////////////////////////////////////////////////////
 // Version Management class
 ////////////////////////////////////////////////////////////////////////////////
