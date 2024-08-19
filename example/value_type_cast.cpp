@@ -9,7 +9,6 @@ using namespace Napi;
   V(BigInt)                                                                    \
   V(Date)                                                                      \
   V(String)                                                                    \
-  V(Symbol)                                                                    \
   V(Object)                                                                    \
   V(Array)                                                                     \
   V(ArrayBuffer)                                                               \

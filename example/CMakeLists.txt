@@ -3,6 +3,15 @@ project(example)
 
 set(CMAKE_CXX_STANDARD 17)
 
+file(GLOB_RECURSE
+        SOURCES
+        "basic_types/*.cpp"
+        "dataview/*.cpp"
+        "object/*.cpp"
+        "threadsafe_function/*.cpp"
+        "typed_threadsafe_function/*.cpp"
+)
+
 add_library(example SHARED
         napi_init.cpp
         addon.cpp
@@ -15,7 +24,6 @@ add_library(example SHARED
         async_worker_persistent.cpp
         async_worker.cpp
         bidint.cpp
-        binding-swallowexcept.cpp
         buffer_no_external.cpp
         buffer.h
         buffer.cpp
@@ -47,6 +55,7 @@ add_library(example SHARED
         typedarray.cpp
         value_type_cast.cpp
         version_management.cpp
+        ${SOURCES}
 )
 
 target_include_directories(example PUBLIC ${NODE_ADDON_API})

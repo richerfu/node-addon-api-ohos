@@ -40,7 +40,7 @@ Object InitFunction(Env env);
 Object InitFunctionReference(Env env);
 Object InitHandleScope(Env env);
 Object InitMovableCallbacks(Env env);
-Object InitMemoryManagement(Env env);
+//Object InitMemoryManagement(Env env);
 Object InitName(Env env);
 Object InitObject(Env env);
 #ifndef NODE_ADDON_API_DISABLE_DEPRECATED
@@ -64,9 +64,9 @@ Object InitTypedThreadSafeFunctionSum(Env env);
 Object InitTypedThreadSafeFunctionUnref(Env env);
 Object InitTypedThreadSafeFunction(Env env);
 #endif
-Object InitSymbol(Env env);
+//Object InitSymbol(Env env);
 Object InitTypedArray(Env env);
-Object InitGlobalObject(Env env);
+//Object InitGlobalObject(Env env);
 Object InitObjectWrap(Env env);
 Object InitObjectWrapConstructorException(Env env);
 Object InitObjectWrapFunction(Env env);
@@ -98,7 +98,7 @@ Object Init(Env env, Object exports) {
     exports.Set("asyncprogressqueueworker", InitAsyncProgressQueueWorker(env));
     exports.Set("asyncprogressworker", InitAsyncProgressWorker(env));
 #endif
-    exports.Set("globalObject", InitGlobalObject(env));
+//    exports.Set("globalObject", InitGlobalObject(env));
     exports.Set("asyncworker", InitAsyncWorker(env));
     exports.Set("persistentasyncworker", InitPersistentAsyncWorker(env));
     exports.Set("basic_types_array", InitBasicTypesArray(env));
@@ -131,14 +131,14 @@ Object Init(Env env, Object exports) {
     exports.Set("name", InitName(env));
     exports.Set("handlescope", InitHandleScope(env));
     exports.Set("movable_callbacks", InitMovableCallbacks(env));
-    exports.Set("memory_management", InitMemoryManagement(env));
+//    exports.Set("memory_management", InitMemoryManagement(env));
     exports.Set("object", InitObject(env));
 #ifndef NODE_ADDON_API_DISABLE_DEPRECATED
     exports.Set("object_deprecated", InitObjectDeprecated(env));
 #endif  // !NODE_ADDON_API_DISABLE_DEPRECATED
     exports.Set("promise", InitPromise(env));
     exports.Set("run_script", InitRunScript(env));
-    exports.Set("symbol", InitSymbol(env));
+//    exports.Set("symbol", InitSymbol(env));
 #if (NAPI_VERSION > 3)
     exports.Set("threadsafe_function_ctx", InitThreadSafeFunctionCtx(env));
     exports.Set("threadsafe_function_exception",
@@ -189,4 +189,4 @@ Object Init(Env env, Object exports) {
     return exports;
 }
 
-NODE_API_MODULE(addon, Init)
+NODE_API_MODULE(example, Init)

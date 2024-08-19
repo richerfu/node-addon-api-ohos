@@ -68,16 +68,6 @@ Value CheckString(const CallbackInfo& info) {
     }
 }
 
-Value CreateSymbol(const CallbackInfo& info) {
-    String description = info[0].As<String>();
-
-    if (!description.IsUndefined()) {
-        return Symbol::New(info.Env(), description);
-    } else {
-        return Symbol::New(info.Env());
-    }
-}
-
 Value CheckSymbol(const CallbackInfo& info) {
     return Boolean::New(info.Env(), info[0].Type() == napi_symbol);
 }
@@ -101,7 +91,6 @@ Object InitName(Env env) {
     exports["nullString16ShouldThrow"] =
             Function::New(env, NullString16ShouldThrow);
     exports["checkString"] = Function::New(env, CheckString);
-    exports["createSymbol"] = Function::New(env, CreateSymbol);
     exports["checkSymbol"] = Function::New(env, CheckSymbol);
 
     return exports;

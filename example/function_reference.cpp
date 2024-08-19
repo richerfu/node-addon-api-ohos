@@ -1,5 +1,5 @@
 #include "napi.h"
-#include "test_helper.h"
+#include "common/test_helper.h"
 
 using namespace Napi;
 

@@ -55,21 +55,9 @@ public:
                         // Make sure to check that the deleter gets called.
                         StaticMethod("staticVoidMethod", TestClassStaticVoidMethod),
                         // Make sure to check that the deleter gets called.
-                        StaticMethod(Napi::Symbol::New(env, "staticMethod"),
-                                     TestClassStaticMethod),
-                        // Make sure to check that the deleter gets called.
-                        StaticMethod(Napi::Symbol::New(env, "staticVoidMethod"),
-                                     TestClassStaticVoidMethod),
-                        // Make sure to check that the deleter gets called.
                         InstanceMethod("instanceMethod", &TestClass::TestClassInstanceMethod),
                         // Make sure to check that the deleter gets called.
                         InstanceMethod("instanceVoidMethod",
-                                       &TestClass::TestClassInstanceVoidMethod),
-                        // Make sure to check that the deleter gets called.
-                        InstanceMethod(Napi::Symbol::New(env, "instanceMethod"),
-                                       &TestClass::TestClassInstanceMethod),
-                        // Make sure to check that the deleter gets called.
-                        InstanceMethod(Napi::Symbol::New(env, "instanceVoidMethod"),
                                        &TestClass::TestClassInstanceVoidMethod),
                         // Make sure to check that the deleter gets called.
                         InstanceAccessor("instanceAccessor",

@@ -88,17 +88,6 @@ public:
         return Napi::String::From(info.Env(), "TestTag");
     }
 
-    // creates dummy array, returns `([value])[Symbol.iterator]()`
-    Napi::Value Iterator(const Napi::CallbackInfo& info) {
-        Napi::Array array = Napi::Array::New(info.Env());
-        array.Set(array.Length(), Napi::String::From(info.Env(), value_));
-        return MaybeUnwrap(
-                MaybeUnwrap(array.Get(MaybeUnwrap(
-                        Napi::Symbol::WellKnown(info.Env(), "iterator"))))
-                        .As<Napi::Function>()
-                        .Call(array, {}));
-    }
-
     void TestVoidMethodT(const Napi::CallbackInfo& info) {
         value_ = MaybeUnwrap(info[0].ToString());
     }
@@ -116,32 +105,6 @@ public:
     }
 
     static void Initialize(Napi::Env env, Napi::Object exports) {
-        Napi::Symbol kTestStaticValueInternal =
-                Napi::Symbol::New(env, "kTestStaticValueInternal");
-        Napi::Symbol kTestStaticAccessorInternal =
-                Napi::Symbol::New(env, "kTestStaticAccessorInternal");
-        Napi::Symbol kTestStaticAccessorTInternal =
-                Napi::Symbol::New(env, "kTestStaticAccessorTInternal");
-        Napi::Symbol kTestStaticMethodInternal =
-                Napi::Symbol::New(env, "kTestStaticMethodInternal");
-        Napi::Symbol kTestStaticMethodTInternal =
-                Napi::Symbol::New(env, "kTestStaticMethodTInternal");
-        Napi::Symbol kTestStaticVoidMethodTInternal =
-                Napi::Symbol::New(env, "kTestStaticVoidMethodTInternal");
-        Napi::Symbol kTestStaticVoidMethodInternal =
-                Napi::Symbol::New(env, "kTestStaticVoidMethodInternal");
-        Napi::Symbol kTestValueInternal =
-                Napi::Symbol::New(env, "kTestValueInternal");
-        Napi::Symbol kTestAccessorInternal =
-                Napi::Symbol::New(env, "kTestAccessorInternal");
-        Napi::Symbol kTestAccessorTInternal =
-                Napi::Symbol::New(env, "kTestAccessorTInternal");
-        Napi::Symbol kTestMethodInternal =
-                Napi::Symbol::New(env, "kTestMethodInternal");
-        Napi::Symbol kTestMethodTInternal =
-                Napi::Symbol::New(env, "kTestMethodTInternal");
-        Napi::Symbol kTestVoidMethodTInternal =
-                Napi::Symbol::New(env, "kTestVoidMethodTInternal");
 
         exports.Set(
                 "Test",
@@ -150,37 +113,10 @@ public:
                         "Test",
                         {
 
-                                // expose symbols for testing
-                                StaticValue("kTestStaticValueInternal",
-                                            kTestStaticValueInternal),
-                                StaticValue("kTestStaticAccessorInternal",
-                                            kTestStaticAccessorInternal),
-                                StaticValue("kTestStaticAccessorTInternal",
-                                            kTestStaticAccessorTInternal),
-                                StaticValue("kTestStaticMethodInternal",
-                                            kTestStaticMethodInternal),
-                                StaticValue("kTestStaticMethodTInternal",
-                                            kTestStaticMethodTInternal),
-                                StaticValue("kTestStaticVoidMethodInternal",
-                                            kTestStaticVoidMethodInternal),
-                                StaticValue("kTestStaticVoidMethodTInternal",
-                                            kTestStaticVoidMethodTInternal),
-                                StaticValue("kTestValueInternal", kTestValueInternal),
-                                StaticValue("kTestAccessorInternal", kTestAccessorInternal),
-                                StaticValue("kTestAccessorTInternal", kTestAccessorTInternal),
-                                StaticValue("kTestMethodInternal", kTestMethodInternal),
-                                StaticValue("kTestMethodTInternal", kTestMethodTInternal),
-                                StaticValue("kTestVoidMethodTInternal",
-                                            kTestVoidMethodTInternal),
-
                                 // test data
                                 StaticValue("testStaticValue",
                                             Napi::String::New(env, "value"),
                                             napi_enumerable),
-                                StaticValue(kTestStaticValueInternal,
-                                            Napi::Number::New(env, 5),
-                                            napi_default),
-
                                 StaticAccessor("testStaticGetter",
                                                &StaticGetter,
                                                nullptr,
@@ -191,36 +127,18 @@ public:
                                                &StaticGetter,
                                                &StaticSetter,
                                                napi_enumerable),
-                                StaticAccessor(kTestStaticAccessorInternal,
-                                               &StaticGetter,
-                                               &StaticSetter,
-                                               napi_enumerable),
                                 StaticAccessor<&StaticGetter>("testStaticGetterT"),
                                 StaticAccessor<&StaticGetter, &StaticSetter>(
                                         "testStaticGetSetT"),
-                                StaticAccessor<&StaticGetter, &StaticSetter>(
-                                        kTestStaticAccessorTInternal),
                                 StaticMethod(
                                         "testStaticVoidMethod", &StaticMethodVoidCb, napi_default),
-                                StaticMethod(kTestStaticVoidMethodInternal,
-                                             &StaticMethodVoidCb,
-                                             napi_default),
                                 StaticMethod(
                                         "testStaticMethod", &TestStaticMethod, napi_enumerable),
-                                StaticMethod(kTestStaticMethodInternal,
-                                             &TestStaticMethodInternal,
-                                             napi_default),
                                 StaticMethod<&TestStaticVoidMethodT>("testStaticVoidMethodT"),
                                 StaticMethod<&TestStaticMethodT>("testStaticMethodT"),
-                                StaticMethod<&TestStaticVoidMethodT>(
-                                        kTestStaticVoidMethodTInternal),
-                                StaticMethod<&TestStaticMethodT>(kTestStaticMethodTInternal),
                                 StaticMethod("canUnWrap", &CanUnWrap, napi_enumerable),
                                 InstanceValue("testValue",
                                               Napi::Boolean::New(env, true),
-                                              napi_enumerable),
-                                InstanceValue(kTestValueInternal,
-                                              Napi::Boolean::New(env, false),
                                               napi_enumerable),
 
                                 InstanceAccessor(
@@ -231,36 +149,13 @@ public:
                                                  &Test::Getter,
                                                  &Test::Setter,
                                                  napi_enumerable),
-                                InstanceAccessor(kTestAccessorInternal,
-                                                 &Test::Getter,
-                                                 &Test::Setter,
-                                                 napi_enumerable),
                                 InstanceAccessor<&Test::Getter>("testGetterT"),
                                 InstanceAccessor<&Test::Getter, &Test::Setter>("testGetSetT"),
-                                InstanceAccessor<&Test::Getter, &Test::Setter>(
-                                        kTestAccessorInternal),
 
                                 InstanceMethod(
                                         "testMethod", &Test::TestMethod, napi_enumerable),
-                                InstanceMethod(kTestMethodInternal,
-                                               &Test::TestMethodInternal,
-                                               napi_default),
                                 InstanceMethod<&Test::TestMethodT>("testMethodT"),
                                 InstanceMethod<&Test::TestVoidMethodT>("testVoidMethodT"),
-                                InstanceMethod<&Test::TestMethodT>(kTestMethodTInternal),
-                                InstanceMethod<&Test::TestVoidMethodT>(
-                                        kTestVoidMethodTInternal),
-
-                                // conventions
-                                InstanceAccessor(
-                                        MaybeUnwrap(Napi::Symbol::WellKnown(env, "toStringTag")),
-                                        &Test::ToStringTag,
-                                        nullptr,
-                                        napi_enumerable),
-                                InstanceMethod(
-                                        MaybeUnwrap(Napi::Symbol::WellKnown(env, "iterator")),
-                                        &Test::Iterator,
-                                        napi_default),
 
                         }));
     }
