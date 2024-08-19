@@ -532,18 +532,13 @@ inline std::string StringFormat(const char* format, ...) {
         return Error(_env, value);
     }
 
-    inline MaybeOrValue<Value> Env::RunScript(const char* utf8script) const {
-        String script = String::New(_env, utf8script);
-        return RunScript(script);
+    inline MaybeOrValue<Value> Env::RunScript(const std::string& utf8scriptPath) const {
+        return RunScript(utf8scriptPath.c_str());
     }
 
-    inline MaybeOrValue<Value> Env::RunScript(const std::string& utf8script) const {
-        return RunScript(utf8script.c_str());
-    }
-
-    inline MaybeOrValue<Value> Env::RunScript(String script) const {
+    inline MaybeOrValue<Value> Env::RunScript(const char* scriptPath) const {
         napi_value result;
-        napi_status status = napi_run_script(_env, script, &result);
+        napi_status status = napi_run_script_path(_env, scriptPath, &result);
         NAPI_RETURN_OR_THROW_IF_FAILED(
                 _env, status, Napi::Value(_env, result), Napi::Value);
     }

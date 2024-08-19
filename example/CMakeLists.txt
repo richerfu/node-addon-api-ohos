@@ -49,7 +49,6 @@ add_library(example SHARED
         objectwrap.cpp
         promise.cpp
         reference.cpp
-        run_script.cpp
         thunking_manual.cpp
         type_taggable.cpp
         typedarray.cpp
