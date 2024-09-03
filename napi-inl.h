@@ -4482,6 +4482,10 @@ inline ObjectWrap<T>::ObjectWrap(const Napi::CallbackInfo& callbackInfo) {
                        nullptr,
                        &ref);
     NAPI_THROW_IF_FAILED_VOID(env, status);
+    // unref after napi_wrap
+    // https://gitee.com/openharmony/docs/pulls/57998/files
+    status = napi_reference_unref(env, ref, nullptr);
+    NAPI_THROW_IF_FAILED_VOID(env, status);
 
     Reference<Object>* instanceRef = instance;
     *instanceRef = Reference<Object>(env, ref);
