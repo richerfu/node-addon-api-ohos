@@ -24,3 +24,17 @@ find_package(node_addon_api_ohos REQUIRED)
 
 target_link_libraries(entry PRIVATE node_addon_api_ohos)
 ```
+
+## Build
+
+You can release package locally. Just run command: 
+
+```shell
+bash ./scripts/release.sh
+```
+
+It will generate a `.har` package in current path. You can import it with `file` protocol.
+
+## Community
+
+- [ohos-rs](https://github.com/ohos-rs/ohos-rs)
