@@ -4,3 +4,6 @@ build/
 cmake-build-debug/
 
 .DS_Store
+
+*.har
+package/include
