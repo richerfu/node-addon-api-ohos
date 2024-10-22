@@ -1,5 +1,7 @@
 # node-addon-api-ohos
 
+![Platform](https://img.shields.io/badge/platform-arm64/arm/x86__64-blue) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Ohpm Version](https://img.shields.io/badge/OhpmVersion-0.0.1-green)
+
 `node-addon-api` for OpenHarmony/HarmonyNext.
 
 We've made some Harmony-specific adaptations based on [node-addon-api](https://github.com/nodejs/node-addon-api), with the aim of providing the same development experience on the Harmony platform.
@@ -9,7 +11,7 @@ We've made some Harmony-specific adaptations based on [node-addon-api](https://g
 ### Install
 
 ```shell
-ohpm install @ohos-rs/node-addon-api -D
+ohpm install @ohos-rs/node-addon-api --save-dev
 ```
 
 ### Setup
