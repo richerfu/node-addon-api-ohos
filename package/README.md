@@ -5,7 +5,7 @@
 use`ohpm` to install package.
 
 ```shell
-ohpm install @ohos-rs/node-addon-api -D
+ohpm install @ohos-rs/node-addon-api --save-dev
 ```
 
 ## Usage
