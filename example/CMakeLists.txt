@@ -1,7 +1,14 @@
-cmake_minimum_required(VERSION 3.29)
+include($ENV{OHOS_NDK_HOME}/native/build/cmake/ohos.toolchain.cmake)
+
+cmake_minimum_required(VERSION 3.5.0)
 project(example)
 
 set(CMAKE_CXX_STANDARD 17)
+
+set(NODE_ADDON_API "${CMAKE_CURRENT_SOURCE_DIR}/../include")
+
+add_library(node_addon_api_ohos INTERFACE IMPORTED)
+target_include_directories(node_addon_api_ohos INTERFACE ${NODE_ADDON_API}/napi.h ${NODE_ADDON_API}/napi-inl.h ${NODE_ADDON_API}/napi-inl.deprecated.h)
 
 file(GLOB_RECURSE
         SOURCES
@@ -13,7 +20,6 @@ file(GLOB_RECURSE
 )
 
 add_library(example SHARED
-        napi_init.cpp
         addon.cpp
         addon_data.cpp
         common/test_helper.h
@@ -55,7 +61,8 @@ add_library(example SHARED
         value_type_cast.cpp
         version_management.cpp
         ${SOURCES}
+        napi_init.cpp
 )
 
 target_include_directories(example PUBLIC ${NODE_ADDON_API})
-target_link_libraries(example node_addon_api_ohos libace_napi.z.so)
+target_link_libraries(example PRIVATE node_addon_api_ohos libace_napi.z.so)
