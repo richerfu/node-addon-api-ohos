@@ -1,0 +1,22 @@
+# Action name
+name: Simple Test Action
+
+on:
+  push
+
+# Jobs section
+jobs:
+  simple-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup OpenHarmony SDK
+        uses: openharmony-rs/setup-ohos-sdk@v0.1
+        id: setup-ohos
+        with:
+          version: '5.0'
+
+      - name: Build example
+        run: |
+          bash ./scripts/build.sh
