@@ -1,3 +1,3 @@
-import * as binding from 'libexample.so';
+import * as binding from "libexample.so";
 
 export default binding;
