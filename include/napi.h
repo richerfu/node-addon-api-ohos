@@ -1516,7 +1516,7 @@ class Date : public Value {
     };
 
     template <typename T>
-    class Buffer : public Uint8Array {
+    class Buffer : public Object {
     public:
         static Buffer<T> New(napi_env env, size_t length);
 #ifndef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
