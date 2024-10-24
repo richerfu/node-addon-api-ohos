@@ -1,10 +1,10 @@
-import { describe, expect, it, DEFAULT } from '@ohos/hypium';
-import testNapi, {basic_types_array} from 'libentry.so';
+import { describe, expect, it, DEFAULT } from '../util/framework.test';
+import binding from '../util/binding';
 
 export default function basicTypeArray() {
   describe("basic_type_array_test", () => {
     it("RunArray", DEFAULT, () => {
-      const basic_types_array: basic_types_array = testNapi.basic_types_array;
+      const basic_types_array: ESObject = binding.basic_types_array;
 
       const array = basic_types_array.createArray();
       expect(basic_types_array.getLength(array)).assertEqual(0);

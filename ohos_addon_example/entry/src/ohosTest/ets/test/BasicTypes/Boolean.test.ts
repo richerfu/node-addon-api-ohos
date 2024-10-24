@@ -1,10 +1,10 @@
-import { describe, expect, it, DEFAULT } from '@ohos/hypium';
-import testNapi, { basic_types_boolean } from 'libentry.so';
+import { describe, expect, it, DEFAULT } from '../util/framework.test';
+import binding from '../util/binding';
 
 export default function basicTypeBoolean() {
   describe("basic_type_boolean_test", () => {
     it("RunBoolean", DEFAULT, () => {
-      const basic_types_boolean: basic_types_boolean = testNapi.basic_types_boolean;
+      const basic_types_boolean: ESObject = binding.basic_types_boolean;
 
       expect(basic_types_boolean.createBoolean(true)).assertTrue();
       expect(basic_types_boolean.createBoolean(false)).assertFalse();
