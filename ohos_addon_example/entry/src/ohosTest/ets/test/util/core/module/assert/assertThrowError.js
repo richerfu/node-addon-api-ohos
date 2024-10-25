@@ -35,7 +35,10 @@ function assertThrowError(actualValue, expected) {
       message: "An error is not thrown while it is expected!"
     };
   }
-  if (err instanceof Error) {
+  if (expected instanceof Error && err instanceof Error) {
+    result = err instanceof expected;
+    message = "expected throw failed , " + err.message + " is not " + expected.message;
+  } else if (err instanceof Error) {
     let type = typeof expected?.[0];
     if (type === "function") {
       result = err.constructor.name === expected[0].name;

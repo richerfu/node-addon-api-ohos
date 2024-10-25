@@ -12,7 +12,7 @@ rm -rf build
 
 mkdir build && pushd build
 
-cmake -DOHOS_STL=c++_shared -DOHOS_ARCH=arm64-v8a ../
+cmake -DOHOS_STL=c++_shared -DOHOS_ARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Debug ../
 
 cmake --build ./
 
