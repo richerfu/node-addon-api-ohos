@@ -7,6 +7,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(NODE_ADDON_API "${CMAKE_CURRENT_SOURCE_DIR}/../include")
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-exceptions")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+
+add_compile_definitions(NAPI_DISABLE_CPP_EXCEPTIONS=1)
+
 add_library(node_addon_api_ohos INTERFACE IMPORTED)
 target_include_directories(node_addon_api_ohos INTERFACE ${NODE_ADDON_API}/napi.h ${NODE_ADDON_API}/napi-inl.h ${NODE_ADDON_API}/napi-inl.deprecated.h)
 
