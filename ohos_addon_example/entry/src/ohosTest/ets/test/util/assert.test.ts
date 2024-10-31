@@ -5,7 +5,7 @@ function createAssert() {
     expect(condition).assertEqual(true);
   }
 
-  assert.ok = function (condition, message) {
+  assert.ok = function (condition, message?) {
     if (!condition) {
       throw new Error(message || "Assertion failed");
     }

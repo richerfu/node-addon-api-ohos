@@ -2,7 +2,7 @@ import { describe, it, DEFAULT } from '../util/framework.test';
 import binding from '../util/binding';
 import assert from '../util/assert.test';
 
-export default function basicTypeArray() {
+export default function testCase() {
   describe("basic_type_array_test", () => {
     it("RunArray", DEFAULT, () => {
     })

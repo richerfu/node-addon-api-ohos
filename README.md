@@ -27,9 +27,19 @@ find_package(node_addon_api_ohos REQUIRED)
 target_link_libraries(entry PRIVATE node_addon_api_ohos)
 ```
 
+## Environment
+
+For node-addon-api-ohos, we acccepted the following environment variables:
+
+| Name                        | Description                         | Default Value |
+| --------------------------- | ----------------------------------- | ------------- |
+| NAPI_CPP_EXCEPTIONS         | Allow catch the cpp exception       | true          |
+| NAPI_DISABLE_CPP_EXCEPTIONS | Disable catch the cpp exception     | false         |
+| NAPI_NORMAL                 | Hidden some APIs or cases for Harmony | true          |
+
 ## Build
 
-You can release package locally. Just run command: 
+You can release package locally. Just run command:
 
 ```shell
 bash ./scripts/release.sh
