@@ -2844,7 +2844,8 @@ inline void ArrayBuffer::Detach() {
     inline size_t Buffer<T>::Length() const {
         void *data = nullptr;
         size_t length = 0;
-        napi_get_buffer_info(_env, _value, &data, &length);
+        napi_status status = napi_get_buffer_info(_env, _value, &data, &length);
+        NAPI_THROW_IF_FAILED(_env, status, Buffer<T>());
         return length;
     }
 
