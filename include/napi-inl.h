@@ -2853,7 +2853,8 @@ inline void ArrayBuffer::Detach() {
     inline T* Buffer<T>::Data() const {
         void *data = nullptr;
         size_t length = 0;
-        napi_get_buffer_info(_env, _value, &data, &length);
+        napi_status status = napi_get_buffer_info(_env, _value, &data, &length);
+        NAPI_THROW_IF_FAILED(_env, status, Buffer<T>());
         return reinterpret_cast<T*>(data);
     }
 
