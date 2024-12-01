@@ -2834,20 +2834,27 @@ inline void ArrayBuffer::Detach() {
     }
 
     template <typename T>
-    inline Buffer<T>::Buffer() : Uint8Array() {}
+    inline Buffer<T>::Buffer() : Object() {}
 
     template <typename T>
     inline Buffer<T>::Buffer(napi_env env, napi_value value)
-            : Uint8Array(env, value) {}
+            : Object(env, value) {}
 
     template <typename T>
     inline size_t Buffer<T>::Length() const {
-        return ByteLength() / sizeof(T);
+        void *data = nullptr;
+        size_t length = 0;
+        napi_status status = napi_get_buffer_info(_env, _value, &data, &length);
+        NAPI_THROW_IF_FAILED(_env, status, Buffer<T>());
+        return length;
     }
 
     template <typename T>
     inline T* Buffer<T>::Data() const {
-        return reinterpret_cast<T*>(const_cast<uint8_t*>(Uint8Array::Data()));
+        void *data = nullptr;
+        size_t length = 0;
+        napi_get_buffer_info(_env, _value, &data, &length);
+        return reinterpret_cast<T*>(data);
     }
 
 ////////////////////////////////////////////////////////////////////////////////
