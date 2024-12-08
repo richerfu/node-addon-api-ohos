@@ -2219,15 +2219,17 @@ inline void ArrayBuffer::Detach() {
               _type(napi_typedarray_type::napi_int8_array),
               _length(0) {
         if (value != nullptr) {
+            size_t len = 0;
             napi_status status =
                     napi_get_typedarray_info(_env,
                                              _value,
                                              &const_cast<TypedArray*>(this)->_type,
-                                             &const_cast<TypedArray*>(this)->_length,
+                                             &len,
                                              nullptr,
                                              nullptr,
                                              nullptr);
             NAPI_THROW_IF_FAILED_VOID(_env, status);
+            _length = len / ElementSize();
         }
     }
 

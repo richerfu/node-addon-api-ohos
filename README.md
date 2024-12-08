@@ -1,6 +1,6 @@
 # node-addon-api-ohos
 
-![Platform](https://img.shields.io/badge/platform-arm64/arm/x86__64-blue) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Ohpm Version](https://img.shields.io/badge/OhpmVersion-0.0.1-green)
+![Platform](https://img.shields.io/badge/platform-arm64/arm/x86__64-blue) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Ohpm Version](https://img.shields.io/badge/OhpmVersion-0.0.3-green)
 
 `node-addon-api` for OpenHarmony/HarmonyNext.
 
@@ -31,11 +31,12 @@ target_link_libraries(entry PRIVATE node_addon_api_ohos)
 
 For node-addon-api-ohos, we acccepted the following environment variables:
 
-| Name                        | Description                         | Default Value |
-| --------------------------- | ----------------------------------- | ------------- |
-| NAPI_CPP_EXCEPTIONS         | Allow catch the cpp exception       | true          |
-| NAPI_DISABLE_CPP_EXCEPTIONS | Disable catch the cpp exception     | false         |
-| NAPI_NORMAL                 | Hidden some APIs or cases for Harmony | true          |
+| Name                        | Description                               | Default Value |
+| --------------------------- | ----------------------------------------- | ------------- |
+| NAPI_CPP_EXCEPTIONS         | Allow catch the cpp exception             | true          |
+| NAPI_DISABLE_CPP_EXCEPTIONS | Disable catch the cpp exception           | false         |
+| NAPI_NORMAL                 | Hidden some APIs or cases for Harmony     | true          |
+| NODE_GYP_MODULE_NAME        | `NODE_API_ADDON` use it as library's name |               |
 
 ## Build
 
