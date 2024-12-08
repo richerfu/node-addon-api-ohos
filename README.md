@@ -1,6 +1,6 @@
 # node-addon-api-ohos
 
-![Platform](https://img.shields.io/badge/platform-arm64/arm/x86__64-blue) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Ohpm Version](https://img.shields.io/badge/OhpmVersion-0.0.1-green)
+![Platform](https://img.shields.io/badge/platform-arm64/arm/x86__64-blue) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Ohpm Version](https://img.shields.io/badge/OhpmVersion-0.0.3-green)
 
 `node-addon-api` for OpenHarmony/HarmonyNext.
 
