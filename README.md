@@ -31,11 +31,12 @@ target_link_libraries(entry PRIVATE node_addon_api_ohos)
 
 For node-addon-api-ohos, we acccepted the following environment variables:
 
-| Name                        | Description                         | Default Value |
-| --------------------------- | ----------------------------------- | ------------- |
-| NAPI_CPP_EXCEPTIONS         | Allow catch the cpp exception       | true          |
-| NAPI_DISABLE_CPP_EXCEPTIONS | Disable catch the cpp exception     | false         |
-| NAPI_NORMAL                 | Hidden some APIs or cases for Harmony | true          |
+| Name                        | Description                               | Default Value |
+| --------------------------- | ----------------------------------------- | ------------- |
+| NAPI_CPP_EXCEPTIONS         | Allow catch the cpp exception             | true          |
+| NAPI_DISABLE_CPP_EXCEPTIONS | Disable catch the cpp exception           | false         |
+| NAPI_NORMAL                 | Hidden some APIs or cases for Harmony     | true          |
+| NODE_GYP_MODULE_NAME        | `NODE_API_ADDON` use it as library's name |               |
 
 ## Build
 
