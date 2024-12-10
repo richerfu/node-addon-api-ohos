@@ -2847,7 +2847,7 @@ inline void ArrayBuffer::Detach() {
         void *data = nullptr;
         size_t length = 0;
         napi_status status = napi_get_buffer_info(_env, _value, &data, &length);
-        NAPI_THROW_IF_FAILED(_env, status, Buffer<T>());
+        NAPI_THROW_IF_FAILED(_env, status, 0);
         return length;
     }
 
@@ -2856,7 +2856,7 @@ inline void ArrayBuffer::Detach() {
         void *data = nullptr;
         size_t length = 0;
         napi_status status = napi_get_buffer_info(_env, _value, &data, &length);
-        NAPI_THROW_IF_FAILED(_env, status, Buffer<T>());
+        NAPI_THROW_IF_FAILED(_env, status, 0);
         return reinterpret_cast<T*>(data);
     }
 
