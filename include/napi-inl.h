@@ -2166,15 +2166,16 @@ inline ArrayBuffer::ArrayBuffer(napi_env env, napi_value value)
 
 inline void* ArrayBuffer::Data() {
   void* data;
-  napi_status status = napi_get_arraybuffer_info(_env, _value, &data, nullptr);
+  size_t length;
+  napi_status status = napi_get_arraybuffer_info(_env, _value, &data, &length);
   NAPI_THROW_IF_FAILED(_env, status, nullptr);
   return data;
 }
 
 inline size_t ArrayBuffer::ByteLength() {
+  void* data;
   size_t length;
-  napi_status status =
-      napi_get_arraybuffer_info(_env, _value, nullptr, &length);
+  napi_status status = napi_get_arraybuffer_info(_env, _value, &data, &length);
   NAPI_THROW_IF_FAILED(_env, status, 0);
   return length;
 }
