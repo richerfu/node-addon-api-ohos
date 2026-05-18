@@ -1,5 +1,9 @@
+# 0.0.5
+- Fix ArrayBuffer get info.
+
+---
 # 0.0.4
-- Fix compiler error
+- Fix compiler error.
 
 ---
 # 0.0.3

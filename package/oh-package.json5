@@ -4,7 +4,7 @@
   name: "@ohos-rs/node-addon-api",
   description: "Node-addon-api for OpenHarmony/HarmonyNext",
   main: "index.ets",
-  version: "0.0.4",
+  version: "0.0.5",
   types: "libs/index.d.ts",
   dependencies: {},
   homepage: "https://github.com/richerfu/node-addon-api-ohos",
