@@ -1,4 +1,6 @@
-include($ENV{OHOS_NDK_HOME}/native/build/cmake/ohos.toolchain.cmake)
+if(NOT NODE_ADDON_API_OHOS_ARKVM_HOST)
+        include($ENV{OHOS_NDK_HOME}/native/build/cmake/ohos.toolchain.cmake)
+endif()
 
 cmake_minimum_required(VERSION 3.5.0)
 project(example)
@@ -13,7 +15,32 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
 add_compile_definitions(NAPI_DISABLE_CPP_EXCEPTIONS=1)
 
 add_library(node_addon_api_ohos INTERFACE IMPORTED)
-target_include_directories(node_addon_api_ohos INTERFACE ${NODE_ADDON_API}/napi.h ${NODE_ADDON_API}/napi-inl.h ${NODE_ADDON_API}/napi-inl.deprecated.h)
+target_include_directories(node_addon_api_ohos INTERFACE ${NODE_ADDON_API})
+
+if(NODE_ADDON_API_OHOS_ARKVM_HOST)
+        if(NOT ARK_ACE_NAPI_LIB)
+                if(ARK_HOST_BUNDLE_DIR)
+                        set(ARK_ACE_NAPI_LIB "${ARK_HOST_BUNDLE_DIR}/libace_napi.so")
+                else()
+                        message(FATAL_ERROR "ARK_ACE_NAPI_LIB or ARK_HOST_BUNDLE_DIR is required")
+                endif()
+        endif()
+
+        if(NOT EXISTS "${ARK_ACE_NAPI_LIB}")
+                message(FATAL_ERROR "ARK_ACE_NAPI_LIB does not exist: ${ARK_ACE_NAPI_LIB}")
+        endif()
+
+        if(NOT ARK_NATIVE_API_INCLUDE_DIR)
+                message(FATAL_ERROR "ARK_NATIVE_API_INCLUDE_DIR is required")
+        endif()
+
+        if(NOT EXISTS "${ARK_NATIVE_API_INCLUDE_DIR}/napi/native_api.h")
+                message(FATAL_ERROR "ARK_NATIVE_API_INCLUDE_DIR must contain napi/native_api.h")
+        endif()
+
+        target_include_directories(node_addon_api_ohos INTERFACE ${ARK_NATIVE_API_INCLUDE_DIR})
+        add_compile_definitions(OHOS=1 __OHOS__=1)
+endif()
 
 file(GLOB_RECURSE
         SOURCES
@@ -60,6 +87,7 @@ add_library(example SHARED
         objectwrap.cpp
         promise.cpp
         reference.cpp
+        run_script.cpp
         thunking_manual.cpp
         type_taggable.cpp
         typedarray.cpp
@@ -70,4 +98,10 @@ add_library(example SHARED
 )
 
 target_include_directories(example PUBLIC ${NODE_ADDON_API})
-target_link_libraries(example PRIVATE node_addon_api_ohos libace_napi.z.so)
+target_link_libraries(example PRIVATE node_addon_api_ohos)
+
+if(NODE_ADDON_API_OHOS_ARKVM_HOST)
+        target_link_libraries(example PRIVATE "${ARK_ACE_NAPI_LIB}" pthread dl)
+else()
+        target_link_libraries(example PRIVATE libace_napi.z.so)
+endif()

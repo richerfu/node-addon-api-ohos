@@ -1,12 +1,13 @@
-# Action name
-name: Simple Test Action
+name: Tests
 
 on:
-  push
+  push:
+  pull_request:
+  workflow_dispatch:
 
-# Jobs section
 jobs:
-  simple-test:
+  build-ohos-example:
+    name: Build OHOS example
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,3 +21,51 @@ jobs:
       - name: Build example
         run: |
           bash ./scripts/build.sh
+
+  arkvm-tests:
+    name: ArkVM tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup OpenHarmony SDK
+        uses: openharmony-rs/setup-ohos-sdk@v0.1
+        with:
+          version: '5.0.0'
+
+      - name: Setup ArkVM
+        id: setup-arkvm
+        uses: harmony-contrib/arkts-vm@v2.0.0
+        with:
+          cache: true
+
+      - name: Validate ArkVM host bundle
+        env:
+          ARK_HOST_TOOLS_DIR: ${{ steps.setup-arkvm.outputs.arkvm-path }}
+        run: |
+          set -euo pipefail
+          test -x "${ARK_HOST_TOOLS_DIR}/ark_js_napi_cli"
+          test -x "${ARK_HOST_TOOLS_DIR}/es2abc"
+          test -f "${ARK_HOST_TOOLS_DIR}/libace_napi.so"
+
+      - name: Build ArkVM host addon
+        env:
+          ARK_HOST_TOOLS_DIR: ${{ steps.setup-arkvm.outputs.arkvm-path }}
+        run: bash ./scripts/arkvm/build_host_libs.sh
+
+      - name: Run ArkVM tests
+        env:
+          ARK_HOST_TOOLS_DIR: ${{ steps.setup-arkvm.outputs.arkvm-path }}
+        run: bash ./scripts/arkvm/run_tests.sh
+
+      - name: Upload ArkVM logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arkvm-test-logs
+          path: |
+            .tmp_arkvm_runner/results.tsv
+            .tmp_arkvm_runner/logs
