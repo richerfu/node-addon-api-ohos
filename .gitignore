@@ -9,3 +9,7 @@ cmake-build-debug/
 *.har
 package/include
 *.so
+.tmp_arkvm_runner/
+test/suites/
+test/suites.list
+example/build-arkvm-host/

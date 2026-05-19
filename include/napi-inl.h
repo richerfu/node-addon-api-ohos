@@ -18,8 +18,15 @@
 #if NAPI_HAS_THREADS
 #include <mutex>
 #endif  // NAPI_HAS_THREADS
+#include <string_view>
 #include <type_traits>
 #include <utility>
+
+#if defined(__clang__) || defined(__GNUC__)
+#define NAPI_NO_SANITIZE_VPTR __attribute__((no_sanitize("vptr")))
+#else
+#define NAPI_NO_SANITIZE_VPTR
+#endif
 
 namespace Napi {
 
@@ -931,6 +938,17 @@ inline bool Value::IsBuffer() const {
 
   bool result;
   napi_status status = napi_is_buffer(_env, _value, &result);
+#ifdef OHOS
+  if (status != napi_ok || !result) {
+    bool isArrayBuffer = false;
+    napi_status arrayBufferStatus =
+        napi_is_arraybuffer(_env, _value, &isArrayBuffer);
+    if (arrayBufferStatus == napi_ok) {
+      status = napi_ok;
+      result = result || isArrayBuffer;
+    }
+  }
+#endif
   NAPI_THROW_IF_FAILED(_env, status, false);
   return result;
 }
@@ -938,6 +956,19 @@ inline bool Value::IsBuffer() const {
 inline bool Value::IsExternal() const {
   return Type() == napi_external;
 }
+
+#ifdef NODE_API_EXPERIMENTAL_HAS_SHAREDARRAYBUFFER
+inline bool Value::IsSharedArrayBuffer() const {
+  if (IsEmpty()) {
+    return false;
+  }
+
+  bool result;
+  napi_status status = node_api_is_sharedarraybuffer(_env, _value, &result);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return result;
+}
+#endif
 
 template <typename T>
 inline T Value::As() const {
@@ -1185,6 +1216,13 @@ inline Date Date::New(napi_env env, double val) {
   return Date(env, value);
 }
 
+inline Date Date::New(napi_env env, std::chrono::system_clock::time_point tp) {
+  using namespace std::chrono;
+  auto ms = static_cast<double>(
+      duration_cast<milliseconds>(tp.time_since_epoch()).count());
+  return Date::New(env, ms);
+}
+
 inline void Date::CheckCast(napi_env env, napi_value value) {
   NAPI_CHECK(value != nullptr, "Date::CheckCast", "empty value");
 
@@ -1239,6 +1277,10 @@ inline String String::New(napi_env env, const std::string& val) {
 
 inline String String::New(napi_env env, const std::u16string& val) {
   return String::New(env, val.c_str(), val.size());
+}
+
+inline String String::New(napi_env env, std::string_view val) {
+  return String::New(env, val.data(), val.size());
 }
 
 inline String String::New(napi_env env, const char* val) {
@@ -1350,6 +1392,11 @@ inline Symbol Symbol::New(napi_env env, const std::string& description) {
   return Symbol::New(env, descriptionValue);
 }
 
+inline Symbol Symbol::New(napi_env env, std::string_view description) {
+  napi_value descriptionValue = String::New(env, description);
+  return Symbol::New(env, descriptionValue);
+}
+
 inline Symbol Symbol::New(napi_env env, String description) {
   napi_value descriptionValue = description;
   return Symbol::New(env, descriptionValue);
@@ -1387,6 +1434,12 @@ inline MaybeOrValue<Symbol> Symbol::WellKnown(napi_env env,
 
 inline MaybeOrValue<Symbol> Symbol::For(napi_env env,
                                         const std::string& description) {
+  napi_value descriptionValue = String::New(env, description);
+  return Symbol::For(env, descriptionValue);
+}
+
+inline MaybeOrValue<Symbol> Symbol::For(napi_env env,
+                                        std::string_view description) {
   napi_value descriptionValue = String::New(env, description);
   return Symbol::For(env, descriptionValue);
 }
@@ -1952,6 +2005,19 @@ inline MaybeOrValue<bool> Object::Seal() const {
 }
 #endif  // NAPI_VERSION >= 8
 
+inline MaybeOrValue<Object> Object::GetPrototype() const {
+  napi_value result;
+  napi_status status = napi_get_prototype(_env, _value, &result);
+  NAPI_RETURN_OR_THROW_IF_FAILED(_env, status, Object(_env, result), Object);
+}
+
+#ifdef NODE_API_EXPERIMENTAL_HAS_SET_PROTOTYPE
+inline MaybeOrValue<bool> Object::SetPrototype(const Object& value) const {
+  napi_status status = node_api_set_prototype(_env, _value, value);
+  NAPI_RETURN_OR_THROW_IF_FAILED(_env, status, status == napi_ok, bool);
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // External class
 ////////////////////////////////////////////////////////////////////////////////
@@ -2072,6 +2138,55 @@ inline uint32_t Array::Length() const {
   NAPI_THROW_IF_FAILED(_env, status, 0);
   return result;
 }
+
+#ifdef NODE_API_EXPERIMENTAL_HAS_SHAREDARRAYBUFFER
+////////////////////////////////////////////////////////////////////////////////
+// SharedArrayBuffer class
+////////////////////////////////////////////////////////////////////////////////
+
+inline SharedArrayBuffer::SharedArrayBuffer() : Object() {}
+
+inline SharedArrayBuffer::SharedArrayBuffer(napi_env env, napi_value value)
+    : Object(env, value) {}
+
+inline void SharedArrayBuffer::CheckCast(napi_env env, napi_value value) {
+  NAPI_CHECK(value != nullptr, "SharedArrayBuffer::CheckCast", "empty value");
+
+  bool result;
+  napi_status status = node_api_is_sharedarraybuffer(env, value, &result);
+  NAPI_CHECK(status == napi_ok,
+             "SharedArrayBuffer::CheckCast",
+             "node_api_is_sharedarraybuffer failed");
+  NAPI_CHECK(
+      result, "SharedArrayBuffer::CheckCast", "value is not sharedarraybuffer");
+}
+
+inline SharedArrayBuffer SharedArrayBuffer::New(napi_env env,
+                                                size_t byteLength) {
+  napi_value value;
+  void* data;
+  napi_status status =
+      node_api_create_sharedarraybuffer(env, byteLength, &data, &value);
+  NAPI_THROW_IF_FAILED(env, status, SharedArrayBuffer());
+
+  return SharedArrayBuffer(env, value);
+}
+
+inline void* SharedArrayBuffer::Data() {
+  void* data;
+  napi_status status = napi_get_arraybuffer_info(_env, _value, &data, nullptr);
+  NAPI_THROW_IF_FAILED(_env, status, nullptr);
+  return data;
+}
+
+inline size_t SharedArrayBuffer::ByteLength() {
+  size_t length;
+  napi_status status =
+      napi_get_arraybuffer_info(_env, _value, nullptr, &length);
+  NAPI_THROW_IF_FAILED(_env, status, 0);
+  return length;
+}
+#endif  // NODE_API_EXPERIMENTAL_HAS_SHAREDARRAYBUFFER
 
 ////////////////////////////////////////////////////////////////////////////////
 // ArrayBuffer class
@@ -2227,6 +2342,39 @@ inline DataView DataView::New(napi_env env,
   return DataView(env, value);
 }
 
+#ifdef NODE_API_EXPERIMENTAL_HAS_SHAREDARRAYBUFFER
+inline DataView DataView::New(napi_env env,
+                              Napi::SharedArrayBuffer arrayBuffer) {
+  return New(env, arrayBuffer, 0, arrayBuffer.ByteLength());
+}
+
+inline DataView DataView::New(napi_env env,
+                              Napi::SharedArrayBuffer arrayBuffer,
+                              size_t byteOffset) {
+  if (byteOffset > arrayBuffer.ByteLength()) {
+    NAPI_THROW(RangeError::New(
+                   env, "Start offset is outside the bounds of the buffer"),
+               DataView());
+  }
+  return New(
+      env, arrayBuffer, byteOffset, arrayBuffer.ByteLength() - byteOffset);
+}
+
+inline DataView DataView::New(napi_env env,
+                              Napi::SharedArrayBuffer arrayBuffer,
+                              size_t byteOffset,
+                              size_t byteLength) {
+  if (byteOffset + byteLength > arrayBuffer.ByteLength()) {
+    NAPI_THROW(RangeError::New(env, "Invalid DataView length"), DataView());
+  }
+  napi_value value;
+  napi_status status =
+      napi_create_dataview(env, byteLength, arrayBuffer, byteOffset, &value);
+  NAPI_THROW_IF_FAILED(env, status, DataView());
+  return DataView(env, value);
+}
+#endif  // NODE_API_EXPERIMENTAL_HAS_SHAREDARRAYBUFFER
+
 inline void DataView::CheckCast(napi_env env, napi_value value) {
   NAPI_CHECK(value != nullptr, "DataView::CheckCast", "empty value");
 
@@ -2250,6 +2398,10 @@ inline DataView::DataView(napi_env env, napi_value value) : Object(env, value) {
 }
 
 inline Napi::ArrayBuffer DataView::ArrayBuffer() const {
+  return Buffer().As<Napi::ArrayBuffer>();
+}
+
+inline Napi::Value DataView::Buffer() const {
   napi_value arrayBuffer;
   napi_status status = napi_get_dataview_info(_env,
                                               _value /* dataView */,
@@ -2257,8 +2409,8 @@ inline Napi::ArrayBuffer DataView::ArrayBuffer() const {
                                               nullptr /* data */,
                                               &arrayBuffer /* arrayBuffer */,
                                               nullptr /* byteOffset */);
-  NAPI_THROW_IF_FAILED(_env, status, Napi::ArrayBuffer());
-  return Napi::ArrayBuffer(_env, arrayBuffer);
+  NAPI_THROW_IF_FAILED(_env, status, Napi::Value());
+  return Napi::Value(_env, arrayBuffer);
 }
 
 inline size_t DataView::ByteOffset() const {
@@ -2819,7 +2971,94 @@ inline void Promise::CheckCast(napi_env env, napi_value value) {
   NAPI_CHECK(result, "Promise::CheckCast", "value is not promise");
 }
 
+inline Promise::Promise() : Object() {}
+
 inline Promise::Promise(napi_env env, napi_value value) : Object(env, value) {}
+
+inline MaybeOrValue<Promise> Promise::Then(napi_value onFulfilled) const {
+  EscapableHandleScope scope(_env);
+#ifdef NODE_ADDON_API_ENABLE_MAYBE
+  Value thenMethod;
+  if (!Get("then").UnwrapTo(&thenMethod)) {
+    return Nothing<Promise>();
+  }
+  MaybeOrValue<Value> result =
+      thenMethod.As<Function>().Call(*this, {onFulfilled});
+  if (result.IsJust()) {
+    return Just(scope.Escape(result.Unwrap()).As<Promise>());
+  }
+  return Nothing<Promise>();
+#else
+  Function thenMethod = Get("then").As<Function>();
+  MaybeOrValue<Value> result = thenMethod.Call(*this, {onFulfilled});
+  if (scope.Env().IsExceptionPending()) {
+    return Promise();
+  }
+  return scope.Escape(result).As<Promise>();
+#endif
+}
+
+inline MaybeOrValue<Promise> Promise::Then(napi_value onFulfilled,
+                                           napi_value onRejected) const {
+  EscapableHandleScope scope(_env);
+#ifdef NODE_ADDON_API_ENABLE_MAYBE
+  Value thenMethod;
+  if (!Get("then").UnwrapTo(&thenMethod)) {
+    return Nothing<Promise>();
+  }
+  MaybeOrValue<Value> result =
+      thenMethod.As<Function>().Call(*this, {onFulfilled, onRejected});
+  if (result.IsJust()) {
+    return Just(scope.Escape(result.Unwrap()).As<Promise>());
+  }
+  return Nothing<Promise>();
+#else
+  Function thenMethod = Get("then").As<Function>();
+  MaybeOrValue<Value> result =
+      thenMethod.Call(*this, {onFulfilled, onRejected});
+  if (scope.Env().IsExceptionPending()) {
+    return Promise();
+  }
+  return scope.Escape(result).As<Promise>();
+#endif
+}
+
+inline MaybeOrValue<Promise> Promise::Catch(napi_value onRejected) const {
+  EscapableHandleScope scope(_env);
+#ifdef NODE_ADDON_API_ENABLE_MAYBE
+  Value catchMethod;
+  if (!Get("catch").UnwrapTo(&catchMethod)) {
+    return Nothing<Promise>();
+  }
+  MaybeOrValue<Value> result =
+      catchMethod.As<Function>().Call(*this, {onRejected});
+  if (result.IsJust()) {
+    return Just(scope.Escape(result.Unwrap()).As<Promise>());
+  }
+  return Nothing<Promise>();
+#else
+  Function catchMethod = Get("catch").As<Function>();
+  MaybeOrValue<Value> result = catchMethod.Call(*this, {onRejected});
+  if (scope.Env().IsExceptionPending()) {
+    return Promise();
+  }
+  return scope.Escape(result).As<Promise>();
+#endif
+}
+
+inline MaybeOrValue<Promise> Promise::Then(const Function& onFulfilled) const {
+  return Then(static_cast<napi_value>(onFulfilled));
+}
+
+inline MaybeOrValue<Promise> Promise::Then(const Function& onFulfilled,
+                                           const Function& onRejected) const {
+  return Then(static_cast<napi_value>(onFulfilled),
+              static_cast<napi_value>(onRejected));
+}
+
+inline MaybeOrValue<Promise> Promise::Catch(const Function& onRejected) const {
+  return Catch(static_cast<napi_value>(onRejected));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Buffer<T> class
@@ -2828,9 +3067,15 @@ inline Promise::Promise(napi_env env, napi_value value) : Object(env, value) {}
 template <typename T>
 inline Buffer<T> Buffer<T>::New(napi_env env, size_t length) {
   napi_value value;
-  void* data;
+  void* data = nullptr;
+  const size_t byteLength = length * sizeof(T);
   napi_status status =
-      napi_create_buffer(env, length * sizeof(T), &data, &value);
+      napi_create_buffer(env, byteLength, &data, &value);
+#ifdef OHOS
+  if (status != napi_ok) {
+    status = napi_create_arraybuffer(env, byteLength, &data, &value);
+  }
+#endif
   NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
   return Buffer(env, value);
 }
@@ -2985,8 +3230,18 @@ inline Buffer<T> Buffer<T>::NewOrCopy(napi_env env,
 template <typename T>
 inline Buffer<T> Buffer<T>::Copy(napi_env env, const T* data, size_t length) {
   napi_value value;
+  void* copiedData = nullptr;
+  const size_t byteLength = length * sizeof(T);
   napi_status status =
-      napi_create_buffer_copy(env, length * sizeof(T), data, nullptr, &value);
+      napi_create_buffer_copy(env, byteLength, data, &copiedData, &value);
+#ifdef OHOS
+  if (status != napi_ok) {
+    status = napi_create_arraybuffer(env, byteLength, &copiedData, &value);
+    if (status == napi_ok && byteLength != 0 && data != nullptr) {
+      std::memcpy(copiedData, data, byteLength);
+    }
+  }
+#endif
   NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
   return Buffer<T>(env, value);
 }
@@ -2997,6 +3252,17 @@ inline void Buffer<T>::CheckCast(napi_env env, napi_value value) {
 
   bool result;
   napi_status status = napi_is_buffer(env, value, &result);
+#ifdef OHOS
+  if (status != napi_ok || !result) {
+    bool isArrayBuffer = false;
+    napi_status arrayBufferStatus =
+        napi_is_arraybuffer(env, value, &isArrayBuffer);
+    if (arrayBufferStatus == napi_ok) {
+      status = napi_ok;
+      result = result || isArrayBuffer;
+    }
+  }
+#endif
   NAPI_CHECK(status == napi_ok, "Buffer::CheckCast", "napi_is_buffer failed");
   NAPI_CHECK(result, "Buffer::CheckCast", "value is not buffer");
 }
@@ -3013,8 +3279,13 @@ inline size_t Buffer<T>::Length() const {
     void *data = nullptr;
     size_t length = 0;
     napi_status status = napi_get_buffer_info(_env, _value, &data, &length);
+#ifdef OHOS
+    if (status != napi_ok) {
+      status = napi_get_arraybuffer_info(_env, _value, &data, &length);
+    }
+#endif
     NAPI_THROW_IF_FAILED(_env, status, 0);
-    return length;
+    return length / sizeof(T);
 }
 
 template <typename T>
@@ -3022,7 +3293,12 @@ inline T* Buffer<T>::Data() const {
     void *data = nullptr;
     size_t length = 0;
     napi_status status = napi_get_buffer_info(_env, _value, &data, &length);
-    NAPI_THROW_IF_FAILED(_env, status, 0);
+#ifdef OHOS
+    if (status != napi_ok) {
+      status = napi_get_arraybuffer_info(_env, _value, &data, &length);
+    }
+#endif
+    NAPI_THROW_IF_FAILED(_env, status, nullptr);
     return reinterpret_cast<T*>(data);
 }
 
@@ -3670,8 +3946,8 @@ inline MaybeOrValue<bool> ObjectReference::Set(const std::string& utf8name,
   return Value().Set(utf8name, value);
 }
 
-inline MaybeOrValue<bool> ObjectReference::Set(const std::string& utf8name,
-                                               std::string& utf8value) const {
+inline MaybeOrValue<bool> ObjectReference::Set(
+    const std::string& utf8name, const std::string& utf8value) const {
   HandleScope scope(_env);
   return Value().Set(utf8name, utf8value);
 }
@@ -4653,7 +4929,8 @@ inline napi_value InstanceWrap<T>::WrappedMethod(
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-inline ObjectWrap<T>::ObjectWrap(const Napi::CallbackInfo& callbackInfo) {
+inline NAPI_NO_SANITIZE_VPTR ObjectWrap<T>::ObjectWrap(
+    const Napi::CallbackInfo& callbackInfo) {
   napi_env env = callbackInfo.Env();
   napi_value wrapper = callbackInfo.This();
   napi_status status;
@@ -4671,7 +4948,7 @@ inline ObjectWrap<T>::ObjectWrap(const Napi::CallbackInfo& callbackInfo) {
 }
 
 template <typename T>
-inline ObjectWrap<T>::~ObjectWrap() {
+inline NAPI_NO_SANITIZE_VPTR ObjectWrap<T>::~ObjectWrap() {
   // If the JS object still exists at this point, remove the finalizer added
   // through `napi_wrap()`.
   if (!IsEmpty() && !_finalized) {
@@ -4684,8 +4961,12 @@ inline ObjectWrap<T>::~ObjectWrap() {
   }
 }
 
+// with RTTI turned on, modern compilers check to see if virtual function
+// pointers are stripped of RTTI by void casts. this is intrinsic to how Unwrap
+// works, so we inject a compiler pragma to turn off that check just for the
+// affected methods. this compiler check is on by default in Android NDK 29.
 template <typename T>
-inline T* ObjectWrap<T>::Unwrap(Object wrapper) {
+inline NAPI_NO_SANITIZE_VPTR T* ObjectWrap<T>::Unwrap(Object wrapper) {
   void* unwrapped;
   napi_status status = napi_unwrap(wrapper.Env(), wrapper, &unwrapped);
   NAPI_THROW_IF_FAILED(wrapper.Env(), status, nullptr);
@@ -6983,5 +7264,7 @@ inline void BasicEnv::PostFinalizer(FinalizerType finalizeCallback,
 #endif
 
 } // namespace Napi
+
+#undef NAPI_NO_SANITIZE_VPTR
 
 #endif  // SRC_NAPI_INL_H_

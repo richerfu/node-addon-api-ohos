@@ -11,7 +11,7 @@ namespace {
     Boolean EmptyConstructor(const CallbackInfo& info) {
         auto env = info.Env();
         bool isEmpty = info[0].As<Boolean>();
-        Function function = isEmpty ? Function() : Function(env, Object::New(env));
+        Function function = isEmpty ? Function() : Function::New(env, [](const CallbackInfo&) {});
         return Boolean::New(env, function.IsEmpty());
     }
 
