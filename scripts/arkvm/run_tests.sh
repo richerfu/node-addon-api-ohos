@@ -86,7 +86,11 @@ finalize() {
   fi
 
   if [[ "${KEEP_WORKDIR}" != "1" ]]; then
-    rm -rf "${WORK_ROOT}"
+    if [[ "${failed_count:-0}" -eq 0 ]]; then
+      rm -rf "${WORK_ROOT}"
+    else
+      echo "Preserving failed ArkVM work root for diagnostics: ${WORK_ROOT}" >&2
+    fi
   fi
 
   if [[ "${FAIL_ON_CASE_ERROR}" == "1" ]]; then

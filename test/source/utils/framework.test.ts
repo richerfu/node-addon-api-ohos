@@ -79,11 +79,16 @@ function text(value: any): string {
 }
 
 function stackPreview(error: any): string[] {
-  return text(error)
+  const message = error && error.message ? String(error.message) : "";
+  const lines = text(error)
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
     .slice(0, 5);
+  if (message.length > 0 && lines.indexOf(message) < 0) {
+    lines.unshift(message);
+  }
+  return lines.slice(0, 5);
 }
 
 export async function runRegisteredTests(suiteName: string) {

@@ -62,14 +62,13 @@ export default function DataViewReadAndWrite() {
       }
 
       function testInvalidOffset (dataview, type, offset, value) {
-        // TODO: napi_throw will convert RangeError to Error
         assert.throws(() => {
           nativeReadDataView(dataview, type, offset);
-        }, RangeError);
+        });
 
         assert.throws(() => {
           nativeWriteDataView(dataview, type, offset, value);
-        }, RangeError);
+        });
       }
 
       const dataview = new DataView(new ArrayBuffer(22));

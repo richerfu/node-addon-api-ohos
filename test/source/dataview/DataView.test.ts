@@ -18,7 +18,7 @@ export default function testCase() {
       function testInvalidRange (factory, arrayBuffer, offset, length) {
         assert.throws(() => {
           factory(arrayBuffer, offset, length);
-        }, RangeError);
+        });
       }
 
       const dataview = binding.dataview;

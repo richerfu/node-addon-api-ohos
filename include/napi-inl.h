@@ -938,6 +938,17 @@ inline bool Value::IsBuffer() const {
 
   bool result;
   napi_status status = napi_is_buffer(_env, _value, &result);
+#ifdef OHOS
+  if (status != napi_ok || !result) {
+    bool isArrayBuffer = false;
+    napi_status arrayBufferStatus =
+        napi_is_arraybuffer(_env, _value, &isArrayBuffer);
+    if (arrayBufferStatus == napi_ok) {
+      status = napi_ok;
+      result = result || isArrayBuffer;
+    }
+  }
+#endif
   NAPI_THROW_IF_FAILED(_env, status, false);
   return result;
 }
@@ -3056,9 +3067,15 @@ inline MaybeOrValue<Promise> Promise::Catch(const Function& onRejected) const {
 template <typename T>
 inline Buffer<T> Buffer<T>::New(napi_env env, size_t length) {
   napi_value value;
-  void* data;
+  void* data = nullptr;
+  const size_t byteLength = length * sizeof(T);
   napi_status status =
-      napi_create_buffer(env, length * sizeof(T), &data, &value);
+      napi_create_buffer(env, byteLength, &data, &value);
+#ifdef OHOS
+  if (status != napi_ok) {
+    status = napi_create_arraybuffer(env, byteLength, &data, &value);
+  }
+#endif
   NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
   return Buffer(env, value);
 }
@@ -3213,8 +3230,18 @@ inline Buffer<T> Buffer<T>::NewOrCopy(napi_env env,
 template <typename T>
 inline Buffer<T> Buffer<T>::Copy(napi_env env, const T* data, size_t length) {
   napi_value value;
+  void* copiedData = nullptr;
+  const size_t byteLength = length * sizeof(T);
   napi_status status =
-      napi_create_buffer_copy(env, length * sizeof(T), data, nullptr, &value);
+      napi_create_buffer_copy(env, byteLength, data, &copiedData, &value);
+#ifdef OHOS
+  if (status != napi_ok) {
+    status = napi_create_arraybuffer(env, byteLength, &copiedData, &value);
+    if (status == napi_ok && byteLength != 0 && data != nullptr) {
+      std::memcpy(copiedData, data, byteLength);
+    }
+  }
+#endif
   NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
   return Buffer<T>(env, value);
 }
@@ -3225,6 +3252,17 @@ inline void Buffer<T>::CheckCast(napi_env env, napi_value value) {
 
   bool result;
   napi_status status = napi_is_buffer(env, value, &result);
+#ifdef OHOS
+  if (status != napi_ok || !result) {
+    bool isArrayBuffer = false;
+    napi_status arrayBufferStatus =
+        napi_is_arraybuffer(env, value, &isArrayBuffer);
+    if (arrayBufferStatus == napi_ok) {
+      status = napi_ok;
+      result = result || isArrayBuffer;
+    }
+  }
+#endif
   NAPI_CHECK(status == napi_ok, "Buffer::CheckCast", "napi_is_buffer failed");
   NAPI_CHECK(result, "Buffer::CheckCast", "value is not buffer");
 }
@@ -3241,8 +3279,13 @@ inline size_t Buffer<T>::Length() const {
     void *data = nullptr;
     size_t length = 0;
     napi_status status = napi_get_buffer_info(_env, _value, &data, &length);
+#ifdef OHOS
+    if (status != napi_ok) {
+      status = napi_get_arraybuffer_info(_env, _value, &data, &length);
+    }
+#endif
     NAPI_THROW_IF_FAILED(_env, status, 0);
-    return length;
+    return length / sizeof(T);
 }
 
 template <typename T>
@@ -3250,7 +3293,12 @@ inline T* Buffer<T>::Data() const {
     void *data = nullptr;
     size_t length = 0;
     napi_status status = napi_get_buffer_info(_env, _value, &data, &length);
-    NAPI_THROW_IF_FAILED(_env, status, 0);
+#ifdef OHOS
+    if (status != napi_ok) {
+      status = napi_get_arraybuffer_info(_env, _value, &data, &length);
+    }
+#endif
+    NAPI_THROW_IF_FAILED(_env, status, nullptr);
     return reinterpret_cast<T*>(data);
 }
 

@@ -338,6 +338,9 @@ void Increment(const CallbackInfo& info) {
 #endif  // NAPI_CPP_EXCEPTIONS
 
 Value InstanceOf(const CallbackInfo& info) {
+    if (!info[0].IsObject() || !info[1].IsFunction()) {
+        return Boolean::New(info.Env(), false);
+    }
     Object obj = info[0].As<Object>();
     Function constructor = info[1].As<Function>();
     return Boolean::New(info.Env(), MaybeUnwrap(obj.InstanceOf(constructor)));

@@ -39,6 +39,13 @@ cp "${OHOS_NDK_HOME}/native/sysroot/usr/include/node_api_types.h" "${NATIVE_API_
 cp "${OHOS_NDK_HOME}/native/sysroot/usr/include/js_native_api.h" "${NATIVE_API_INCLUDE_DIR}/"
 cp "${OHOS_NDK_HOME}/native/sysroot/usr/include/js_native_api_types.h" "${NATIVE_API_INCLUDE_DIR}/"
 
+# Host builds are compiled by the platform C++ compiler, not the OHOS clang
+# toolchain. Some SDK packages expose OHOS availability annotations that GCC
+# cannot parse, so strip them from the temporary header copy used for ArkVM.
+while IFS= read -r -d '' header; do
+  sed -i -E 's/[[:space:]]*__attribute__\(\(__availability__\(ohos,[[:space:]]*introduced=[0-9]+(\.[0-9]+)*\)\)\)//g' "${header}"
+done < <(find "${NATIVE_API_INCLUDE_DIR}" -type f -name '*.h' -print0)
+
 cmake -S "${REPO_ROOT}/example" -B "${BUILD_DIR}" \
   -DCMAKE_BUILD_TYPE=Release \
   -DNODE_ADDON_API_OHOS_ARKVM_HOST=ON \

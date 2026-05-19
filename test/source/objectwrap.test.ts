@@ -29,7 +29,7 @@ export default function objectWrapSuite() {
       Test.testStaticVoidMethodT("static typed");
       assert.strictEqual(Test.testStaticMethodT(), "static typed");
 
-      assert.strictEqual(Test.canUnWrap(obj), "getsetT");
+      assert.strictEqual(Test.canUnWrap(obj, "typed"), true);
     });
   });
 }
